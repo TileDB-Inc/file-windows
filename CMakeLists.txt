@@ -4,6 +4,60 @@ INCLUDE(CheckIncludeFile)
 
 project(file)
 
+
+# Get library directory for multiarch linux distros
+include(GNUInstallDirs)
+
+#
+# Stores the IMPORTED_LOCATION* target property of LIB_TARGET in RESULT_VAR.
+# On Windows, preferentially tries the IMPORTED_IMPLIB* target property instead.
+#
+function(get_imported_location RESULT_VAR LIB_TARGET)
+  if (WIN32)
+    # Try several methods to find the imported location.
+    get_target_property(TMP ${LIB_TARGET} IMPORTED_IMPLIB)
+    if (TMP MATCHES "NOTFOUND")
+      get_target_property(TMP ${LIB_TARGET} IMPORTED_IMPLIB_RELWITHDEBINFO)
+    endif()
+    if (TMP MATCHES "NOTFOUND")
+      get_target_property(TMP ${LIB_TARGET} IMPORTED_IMPLIB_RELEASE)
+    endif()
+    if (TMP MATCHES "NOTFOUND")
+      get_target_property(TMP ${LIB_TARGET} IMPORTED_IMPLIB_DEBUG)
+    endif()
+  endif()
+  # Try several methods to find the imported location.
+  if (TMP MATCHES "NOTFOUND" OR NOT WIN32)
+    get_target_property(TMP ${LIB_TARGET} IMPORTED_LOCATION)
+  endif()
+  if (TMP MATCHES "NOTFOUND")
+    get_target_property(TMP ${LIB_TARGET} IMPORTED_LOCATION_RELWITHDEBINFO)
+  endif()
+  if (TMP MATCHES "NOTFOUND")
+    get_target_property(TMP ${LIB_TARGET} IMPORTED_LOCATION_RELEASE)
+  endif()
+  if (TMP MATCHES "NOTFOUND")
+    get_target_property(TMP ${LIB_TARGET} IMPORTED_LOCATION_DEBUG)
+  endif()
+  set(${RESULT_VAR} "${TMP}" PARENT_SCOPE)
+endfunction()
+
+#
+# Adds imported libraries from the given target to the TileDB installation
+# manifest.
+#
+function(install_target_libs LIB_TARGET)
+  get_imported_location(TARGET_LIBRARIES ${LIB_TARGET})
+  if (TARGET_LIBRARIES MATCHES "NOTFOUND")
+    message(FATAL_ERROR "Could not determine library location for ${LIB_TARGET}")
+  endif()
+  if (WIN32 AND ${TARGET_LIBRARIES} MATCHES "${CMAKE_SHARED_LIBRARY_SUFFIX}$")
+    install(FILES ${TARGET_LIBRARIES} DESTINATION ${CMAKE_INSTALL_BINDIR})
+  else()
+    install(FILES ${TARGET_LIBRARIES} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  endif()
+endfunction()
+
 function(cat IN_FILE OUT_FILE)
   file(READ ${IN_FILE} CONTENTS)
   file(APPEND ${OUT_FILE} "${CONTENTS}")
@@ -102,16 +156,13 @@ target_include_directories(libmagic
 )
 
 # copy /pcre2posix.h to regex.h so it can be used as posix regex libary if regex.h does not exist
-message("PCRE2_INCLUDE_DIRS=${PCRE2_INCLUDE_DIRS}")
 if (NOT PCRE2_INCLUDE_DIRS)
   GET_TARGET_PROPERTY(PCRE2_INCLUDE_DIRS pcre2-posix INCLUDE_DIRECTORIES)
 endif()
-message("after PCRE2_INCLUDE_DIRS=${PCRE2_INCLUDE_DIRS}")
 CHECK_INCLUDE_FILE("regex.h" REGEX_HEADER_FOUND)
 if(NOT REGEX_HEADER_FOUND)
   foreach(DIR ${PCRE2_INCLUDE_DIRS})
     if(EXISTS ${DIR}/pcre2posix.h)
-      message("copying ${DIR}/pcre2posix.h to ${DIR}/regex.h")
       configure_file(${DIR}/pcre2posix.h ${DIR}/regex.h COPYONLY)
       set(REGEX_HEADER_FOUND TRUE)
       break()
