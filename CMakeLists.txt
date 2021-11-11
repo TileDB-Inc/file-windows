@@ -77,6 +77,7 @@ function(cat IN_FILE OUT_FILE)
 endfunction()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+set(targets)
 find_package(pcre2 REQUIRED)
 
 option(BUILD_SHARED_LIBS "build as shared library" ON)
@@ -157,6 +158,7 @@ if(BUILD_SHARED_LIBS)
 else()
   add_library(libmagic STATIC ${LIBMAGIC_SOURCE_FILES})
 endif()
+set(targets ${targets} libmagic)
 #include_directories (${WIN_HEADERS_DIR} ${PCRE2_INCLUDE_DIRS} ${LIBMAGIC_SOURCE_DIR} dirent/include getopt)
 include_directories (${WIN_HEADERS_DIR} ${LIBMAGIC_SOURCE_DIR} dirent/include getopt)
 #target_link_libraries(libmagic PRIVATE ${PCRE2_LIBRARIES} ${PCRE2_POSIX_LIBRARIES} shlwapi)
@@ -188,7 +190,9 @@ if(NOT REGEX_HEADER_FOUND)
 endif()
 
 add_executable(file ${LIBMAGIC_SOURCE_DIR}/file.c)
+set(targets ${targets} file)
 add_executable(file_test ${LIBMAGIC_TEST_DIR}/test.c)
+set(targets ${targets} file_test)
 target_link_libraries(file_test libmagic pcre2-posix shlwapi)
 target_link_libraries(file libmagic pcre2-posix shlwapi)
 
@@ -238,10 +242,10 @@ add_custom_target(magic_mgc ALL DEPENDS magic.mgc)
 # Include module with function 'configure_package_config_file'
 include(CMakePackageConfigHelpers)
 
-install(TARGETS file file_test DESTINATION ${CMAKE_INSTALL_BINDIR})
+#install(TARGETS file file_test DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/magic.mgc DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES ${LIBMAGIC_SOURCE_DIR}/magic.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(TARGETS libmagic
+install(TARGETS ${targets}
         EXPORT libmagic-target
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
