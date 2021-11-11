@@ -4,6 +4,9 @@ INCLUDE(CheckIncludeFile)
 
 project(file)
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
 
 # Get library directory for multiarch linux distros
 include(GNUInstallDirs)
@@ -25,6 +28,9 @@ function(get_imported_location RESULT_VAR LIB_TARGET)
     if (TMP MATCHES "NOTFOUND")
       get_target_property(TMP ${LIB_TARGET} IMPORTED_IMPLIB_DEBUG)
     endif()
+    if (TMP MATCHES "NOTFOUND")
+      get_target_property(TMP ${LIB_TARGET} IMPORTED_IMPLIB_NOCONFIG)
+    endif()
   endif()
   # Try several methods to find the imported location.
   if (TMP MATCHES "NOTFOUND" OR NOT WIN32)
@@ -34,10 +40,17 @@ function(get_imported_location RESULT_VAR LIB_TARGET)
     get_target_property(TMP ${LIB_TARGET} IMPORTED_LOCATION_RELWITHDEBINFO)
   endif()
   if (TMP MATCHES "NOTFOUND")
+    message("LIB_TARGET ${LIB_TARGET}")
     get_target_property(TMP ${LIB_TARGET} IMPORTED_LOCATION_RELEASE)
+    message("TMP ${TMP}")
+    get_target_property(TMP_I ${LIB_TARGET} INTERFACE_INCLUDE_DIRECTORIES)
+    message("TMP_I ${TMP_I}")
   endif()
   if (TMP MATCHES "NOTFOUND")
     get_target_property(TMP ${LIB_TARGET} IMPORTED_LOCATION_DEBUG)
+  endif()
+  if (TMP MATCHES "NOTFOUND")
+    get_target_property(TMP ${LIB_TARGET} IMPORTED_LOCATION_NOCONFIG)
   endif()
   set(${RESULT_VAR} "${TMP}" PARENT_SCOPE)
 endfunction()
@@ -222,8 +235,6 @@ add_custom_command(OUTPUT magic.mgc
 
 add_custom_target(magic_mgc ALL DEPENDS magic.mgc)
 
-# Get library directory for multiarch linux distros
-include(GNUInstallDirs)
 # Include module with function 'configure_package_config_file'
 include(CMakePackageConfigHelpers)
 
@@ -232,11 +243,11 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/magic.mgc DESTINATION ${CMAKE_INSTALL_
 install(FILES ${LIBMAGIC_SOURCE_DIR}/magic.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(TARGETS libmagic
         EXPORT libmagic-target
-        RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        )
+)
 install(EXPORT libmagic-target
         FILE libmagic-targets.cmake
         DESTINATION lib/cmake/libmagic
