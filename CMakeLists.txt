@@ -130,7 +130,7 @@ endif()
 #  )
 #endif()
 
-if(BUILD_SHARED_LIBS)
+if(BUILD_SHARED_LIBS AND NOT libmagic_STATIC_LIB)
 message(STATUS "Building libmagic SHARED")
   add_library(libmagic SHARED ${LIBMAGIC_SOURCE_FILES})
 else()
