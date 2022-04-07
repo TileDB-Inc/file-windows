@@ -34,7 +34,12 @@
 #undef HAVE_ERR_H
 
 /* Define to 1 if you have the <dirent.h> header file. */
+#ifdef WIN32
 #undef HAVE_DIRENT_H
+#else
+// TBD: will all non-win32 xplatforms we want have this?
+#define HAVE_DIRENT_H 1
+#endif
 
 /* Define to 1 if you have the <fcntl.h> header file. */
 #define HAVE_FCNTL_H 1
@@ -52,7 +57,9 @@
 #undef HAVE_GETLINE
 
 /* Define to 1 if you have the <getopt.h> header file. */
+#ifdef _WIN32
 #define HAVE_GETOPT_H 1
+#endif
  
 /* Define to 1 if you have the `getopt_long' function. */
 #undef HAVE_GETOPT_LONG
@@ -362,13 +369,23 @@ typedef long int64_t;
 #endif
 
 #ifndef _SSIZE_T_DEFINED
-typedef unsigned __int64    ssize_t;
+//#ifdef _WIN32
+//typedef unsigned __int64    ssize_t;
+//#else
+//typedef uint64_t ssize_t;
+//#endif
+#ifdef _WIN32
+#include <stdint.h>
+typedef uint64_t ssize_t;
+#endif
 #define _SSIZE_T_DEFINED
 #endif
 
+#ifdef _WIN32
 #include <crtdefs.h>
 
 #include <direct.h>
+#endif
 
 /* Define as `fork' if `vfork' does not work. */
 /* #undef vfork */

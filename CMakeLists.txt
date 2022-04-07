@@ -39,15 +39,25 @@ set(WIN_COMPAT_SOURCES
   ${LIBMAGIC_SOURCE_DIR}/localtime_r.c
   ${LIBMAGIC_SOURCE_DIR}/pread.c
   ${LIBMAGIC_SOURCE_DIR}/strcasestr.c
-  ${LIBMAGIC_SOURCE_DIR}/strlcat.c
-  ${LIBMAGIC_SOURCE_DIR}/strlcpy.c
+#  ${LIBMAGIC_SOURCE_DIR}/strlcat.c
+#  ${LIBMAGIC_SOURCE_DIR}/strlcpy.c
   ${LIBMAGIC_SOURCE_DIR}/vasprintf.c
-  ${LIBMAGIC_SOURCE_DIR}/fmtcheck.c
+#  ${LIBMAGIC_SOURCE_DIR}/fmtcheck.c
   ${WIN_HEADERS_DIR}/magic.def
 )
 
-set(LIBMAGIC_SOURCE_FILES
-  ${WIN_COMPAT_SOURCES}
+if(WIN32)
+  set(LIBMAGIC_SOURCE_FILES
+    ${WIN_COMPAT_SOURCES}
+  )
+else()
+  set(LIBMAGIC_SOURCE_FILES
+  )
+endif()
+
+#set(LIBMAGIC_SOURCE_FILES
+#  ${WIN_COMPAT_SOURCES}
+list(APPEND LIBMAGIC_SOURCE_FILES
   ${LIBMAGIC_SOURCE_DIR}/apprentice.c
   ${LIBMAGIC_SOURCE_DIR}/apptype.c
   ${LIBMAGIC_SOURCE_DIR}/ascmagic.c
@@ -57,6 +67,7 @@ set(LIBMAGIC_SOURCE_FILES
   ${LIBMAGIC_SOURCE_DIR}/compress.c
   ${LIBMAGIC_SOURCE_DIR}/der.c
   ${LIBMAGIC_SOURCE_DIR}/encoding.c
+  ${LIBMAGIC_SOURCE_DIR}/fmtcheck.c
   ${LIBMAGIC_SOURCE_DIR}/fsmagic.c
   ${LIBMAGIC_SOURCE_DIR}/funcs.c
   ${LIBMAGIC_SOURCE_DIR}/is_json.c
@@ -66,6 +77,8 @@ set(LIBMAGIC_SOURCE_FILES
   ${LIBMAGIC_SOURCE_DIR}/readcdf.c
   ${CMAKE_CURRENT_BINARY_DIR}/readelf.c
   ${LIBMAGIC_SOURCE_DIR}/softmagic.c
+  ${LIBMAGIC_SOURCE_DIR}/strlcat.c
+  ${LIBMAGIC_SOURCE_DIR}/strlcpy.c
   ${LIBMAGIC_SOURCE_DIR}/is_csv.c
 )
 
@@ -77,21 +90,45 @@ FILE(WRITE ${LIBMAGIC_SOURCE_DIR}/magic.h "${MAGIC_H_CONTENT_NEW}")
 
 
 FILE(READ ${LIBMAGIC_SOURCE_DIR}/readelf.c READELF_C_CONTENT)
+if(WIN32)
 STRING(CONCAT READELF_C_CONTENT_NEW "#include <dirent.h>\n" "${READELF_C_CONTENT}")
+else()
+set( READELF_C_CONTENT_NEW "${READELF_C_CONTENT}")
+endif()
 FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/readelf.c "${READELF_C_CONTENT_NEW}")
 
 FILE(READ ${LIBMAGIC_SOURCE_DIR}/magic.c MAGIC_C_CONTENT)
+if(WIN32)
 STRING(CONCAT MAGIC_C_CONTENT_NEW "#include <dirent.h>\n" "${MAGIC_C_CONTENT}")
+else()
+set( MAGIC_C_CONTENT_NEW "${MAGIC_C_CONTENT}")
+endif()
 FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/magic.c "${MAGIC_C_CONTENT_NEW}")
 
 FILE(READ ${LIBMAGIC_SOURCE_DIR}/file.h FILE_H_CONTENT)
+if(WIN32)
 STRING(CONCAT FILE_H_CONTENT_NEW "#ifdef WIN32\n#include <unistd.h>\n#include <dirent.h>\n#undef S_IFLNK\n#undef S_IFSOCK\n#endif\n" "${FILE_H_CONTENT}")
+else()
+#set( FILE_H_CONTENT_NEW "${FILE_H_CONTENT}")
+STRING(CONCAT FILE_H_CONTENT_NEW "#include <config.h>\n" "${FILE_H_CONTENT}")
+endif()
 FILE(WRITE ${LIBMAGIC_SOURCE_DIR}/file.h "${FILE_H_CONTENT_NEW}")
 
-add_definitions(-DHAVE_CONFIG_H -DVERSION="${FILE_VERSION}" -DWIN32_LEAN_AND_MEAN -DWIN32 -DPCRE2_STATIC )
+#add_definitions(-DHAVE_CONFIG_H -DVERSION="${FILE_VERSION}" -DWIN32_LEAN_AND_MEAN -DWIN32 -DPCRE2_STATIC )
+add_definitions(-DHAVE_CONFIG_H -DVERSION="${FILE_VERSION}" -DPCRE2_STATIC )
+if(WIN32)
+  add_definitions(-DWIN32_LEAN_AND_MEAN -DWIN32)
+endif()
+
 #add_library(libmagic SHARED ${LIBMAGIC_SOURCE_FILES})
 #include_directories (${WIN_HEADERS_DIR} pcre2/src ${LIBMAGIC_SOURCE_DIR} dirent/include getopt)
 #target_link_libraries(libmagic pcre2-posix shlwapi)
+
+#if (NOT WIN32)
+#  list(APPEND LIBMAGIC_SOURCE_FILES
+#    /usr/include/unistd.h
+#  )
+#endif()
 
 if(BUILD_SHARED_LIBS)
   add_library(libmagic SHARED ${LIBMAGIC_SOURCE_FILES})
@@ -99,10 +136,31 @@ else()
   add_library(libmagic STATIC ${LIBMAGIC_SOURCE_FILES})
 endif()
 set(targets ${targets} libmagic)
+
 #include_directories (${WIN_HEADERS_DIR} ${PCRE2_INCLUDE_DIRS} ${LIBMAGIC_SOURCE_DIR} dirent/include getopt)
-include_directories (${WIN_HEADERS_DIR} ${LIBMAGIC_SOURCE_DIR} dirent/include getopt)
+if(WIN32)
+  include_directories (${WIN_HEADERS_DIR} dirent/include)
+endif()
+include_directories (${LIBMAGIC_SOURCE_DIR})
+if(WIN32)
+  include_directories (getopt)
+else()
+  # for NOT WIN32 currently only expecting to need config.h from win-headers, if
+  # anything else found/needed then we're prob. still not correct xplat...
+  include_directories (BEFORE SYSTEM /usr/include ) # local unistd.h hopefully found here
+  include_directories (${WIN_HEADERS_DIR})
+endif()
+
+#include_directories (pcre2/src file/src getopt)
+
 #target_link_libraries(libmagic PRIVATE ${PCRE2_LIBRARIES} ${PCRE2_POSIX_LIBRARIES} shlwapi)
-target_link_libraries(libmagic PRIVATE pcre2-posix pcre2-8 shlwapi)
+#target_link_libraries(libmagic PRIVATE pcre2-posix pcre2-8 shlwapi)
+if(WIN32)
+  target_link_libraries(libmagic pcre2-posix pcre2-8 shlwapi)
+else()
+  target_link_libraries(libmagic pcre2-posix pcre2-8 )
+#  target_link_libraries(libmagic pcre2-posix pcre2-8 bsd)
+endif()
 
 target_include_directories(libmagic
         PUBLIC
@@ -133,8 +191,17 @@ add_executable(file ${LIBMAGIC_SOURCE_DIR}/file.c)
 set(targets ${targets} file)
 add_executable(file_test ${LIBMAGIC_TEST_DIR}/test.c)
 set(targets ${targets} file_test)
+if(WIN32)
 target_link_libraries(file_test libmagic pcre2-posix shlwapi)
-target_link_libraries(file libmagic pcre2-posix shlwapi)
+else()
+target_link_libraries(file_test libmagic pcre2-posix )
+endif()
+#target_link_libraries(file libmagic pcre2-posix shlwapi)
+
+target_link_libraries(file libmagic pcre2-posix)
+if (WIN32)
+  target_link_libraries(file shlwapi)
+endif()
 
 # this tests all because of time-zone or crlf errors
 set(DISABLED_TESTS 

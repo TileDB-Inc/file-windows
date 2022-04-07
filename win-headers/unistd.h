@@ -1,3 +1,6 @@
+#ifndef _WIN32
+#include </usr/include/unistd.h>
+#else
 #ifndef _UNISTD_H
 #define _UNISTD_H    1
 
@@ -69,3 +72,4 @@
 typedef unsigned int mode_t;
 
 #endif /* unistd.h  */
+#endif
