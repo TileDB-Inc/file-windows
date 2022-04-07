@@ -95,7 +95,11 @@
 #undef HAVE_MKOSTEMP
 
 /* Define to 1 if you have the `mkstemp' function. */
+#ifdef _WIN32
 #undef HAVE_MKSTEMP
+#else
+#define HAVE_MKSTEMP 1
+#endif
 
 /* Define to 1 if you have a working `mmap' system call. */
 #undef HAVE_MMAP
@@ -116,7 +120,11 @@
 #define HAVE_STDLIB_H 1
 
 /* Define to 1 if you have the `strcasestr' function. */
+#ifdef _WIN32
 #define HAVE_STRCASESTR 1
+#else
+#undef HAVE_STRCASESTR
+#endif
 
 /* Define to 1 if you have the `strerror' function. */
 #define HAVE_STRERROR 1
