@@ -114,6 +114,28 @@ STRING(CONCAT FILE_H_CONTENT_NEW "#include <config.h>\n" "${FILE_H_CONTENT}")
 endif()
 FILE(WRITE ${LIBMAGIC_SOURCE_DIR}/file.h "${FILE_H_CONTENT_NEW}")
 
+if (NOT WIN32)
+# nasty, nasty...
+# so, this windows port has it's own unistd.h for windows...
+# and the path to include is searched -before- system includes...
+# and we need that local search path because it has other items besides
+# the unistd.h that are needed (at least 'config.h')...
+# not having found any way to handle both ubuntu/mac, ask cmake
+# (ubuntu, include </usr/include/unistd.h> worked, but not on mac)
+# to find it and replace our local one with its contents
+# or fail if not found.
+  find_path(unistd_INCLUDE_DIR
+    NAMES unistd.h
+    PATH_SUFFIXES include
+    /usr
+  )
+  if (NOT unistd_INCLUDE_DIR)
+    message(FATAL "Unable to find needed unistd.h!")
+  endif()
+  FILE(READ ${unistd_INCLUDE_DIR}/unistd.h UNISTD_H_CONTENT)
+  FILE(WRITE ${WIN_HEADERS_DIR}/unistd.h "${UNISTD_H_CONTENT}")
+endif()
+
 #add_definitions(-DHAVE_CONFIG_H -DVERSION="${FILE_VERSION}" -DWIN32_LEAN_AND_MEAN -DWIN32 -DPCRE2_STATIC )
 add_definitions(-DHAVE_CONFIG_H -DVERSION="${FILE_VERSION}" -DPCRE2_STATIC )
 if(WIN32)
@@ -150,7 +172,7 @@ else()
   # for NOT WIN32 currently only expecting to need config.h from win-headers, if
   # anything else found/needed then we're prob. still not correct xplat...
   include_directories (BEFORE SYSTEM /usr/include ) # local unistd.h hopefully found here
-  include_directories (${WIN_HEADERS_DIR})
+  include_directories (AFTER ${WIN_HEADERS_DIR})
 endif()
 
 #include_directories (pcre2/src file/src getopt)

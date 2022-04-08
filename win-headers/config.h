@@ -211,6 +211,7 @@
 #define HAVE_UINT8_T 1
 
 /* Define to 1 if you have the <unistd.h> header file. */
+/* turns out, v5.39 file/src/buffer.c does -not- subject inclusion to this define */
 #define HAVE_UNISTD_H 1
 
 /* Define to 1 if you have the `utime' function. */
