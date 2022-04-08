@@ -184,8 +184,13 @@ endif()
 if(WIN32)
   target_link_libraries(libmagic pcre2-posix pcre2-8 shlwapi)
 else()
-  target_link_libraries(libmagic pcre2-posix pcre2-8 bsd)
-#  target_link_libraries(libmagic pcre2-posix pcre2-8 bsd)
+  if(NOT APPLE)
+    target_link_libraries(libmagic pcre2-posix pcre2-8 bsd)
+  else
+    # strlcat,strlcpy seem to be in headers (intrinsic) somewhere already
+    # and apple complains about 'bsd' lib not found
+    target_link_libraries(libmagic pcre2-posix pcre2-8)
+  endif()
 endif()
 
 target_include_directories(libmagic
