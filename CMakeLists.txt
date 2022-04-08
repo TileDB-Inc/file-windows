@@ -39,8 +39,8 @@ set(WIN_COMPAT_SOURCES
   ${LIBMAGIC_SOURCE_DIR}/localtime_r.c
   ${LIBMAGIC_SOURCE_DIR}/pread.c
   ${LIBMAGIC_SOURCE_DIR}/strcasestr.c
-#  ${LIBMAGIC_SOURCE_DIR}/strlcat.c
-#  ${LIBMAGIC_SOURCE_DIR}/strlcpy.c
+  ${LIBMAGIC_SOURCE_DIR}/strlcat.c
+  ${LIBMAGIC_SOURCE_DIR}/strlcpy.c
   ${LIBMAGIC_SOURCE_DIR}/vasprintf.c
 #  ${LIBMAGIC_SOURCE_DIR}/fmtcheck.c
   ${WIN_HEADERS_DIR}/magic.def
@@ -77,8 +77,8 @@ list(APPEND LIBMAGIC_SOURCE_FILES
   ${LIBMAGIC_SOURCE_DIR}/readcdf.c
   ${CMAKE_CURRENT_BINARY_DIR}/readelf.c
   ${LIBMAGIC_SOURCE_DIR}/softmagic.c
-  ${LIBMAGIC_SOURCE_DIR}/strlcat.c
-  ${LIBMAGIC_SOURCE_DIR}/strlcpy.c
+#  ${LIBMAGIC_SOURCE_DIR}/strlcat.c
+#  ${LIBMAGIC_SOURCE_DIR}/strlcpy.c
   ${LIBMAGIC_SOURCE_DIR}/is_csv.c
 )
 
@@ -171,6 +171,8 @@ if(WIN32)
 else()
   # for NOT WIN32 currently only expecting to need config.h from win-headers, if
   # anything else found/needed then we're prob. still not correct xplat...
+# this 'standard' directory location seems to be ignored, not added directly by cmake?
+# maybe gcc (clang?) sposed to search by default?
   include_directories (BEFORE SYSTEM /usr/include ) # local unistd.h hopefully found here
   include_directories (AFTER ${WIN_HEADERS_DIR})
 endif()
@@ -182,7 +184,7 @@ endif()
 if(WIN32)
   target_link_libraries(libmagic pcre2-posix pcre2-8 shlwapi)
 else()
-  target_link_libraries(libmagic pcre2-posix pcre2-8 )
+  target_link_libraries(libmagic pcre2-posix pcre2-8 bsd)
 #  target_link_libraries(libmagic pcre2-posix pcre2-8 bsd)
 endif()
 
