@@ -186,7 +186,7 @@ if(WIN32)
 else()
   if(NOT APPLE)
     target_link_libraries(libmagic pcre2-posix pcre2-8 bsd)
-  else
+  else()
     # strlcat,strlcpy seem to be in headers (intrinsic) somewhere already
     # and apple complains about 'bsd' lib not found
     target_link_libraries(libmagic pcre2-posix pcre2-8)
