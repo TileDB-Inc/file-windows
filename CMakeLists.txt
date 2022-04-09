@@ -136,11 +136,19 @@ if (NOT WIN32 OR MSYS)
 # (ubuntu, include </usr/include/unistd.h> worked, but not on mac)
 # to find it and replace our local one with its contents
 # or fail if not found.
+  if(MSYS)
   find_path(unistd_INCLUDE_DIR
     NAMES unistd.h
 #    PATH_SUFFIXES include
 #    /usr
   )
+  else()
+  find_path(unistd_INCLUDE_DIR
+    NAMES unistd.h
+    PATH_SUFFIXES include
+    /usr
+  )
+  endif
   if (NOT unistd_INCLUDE_DIR)
     message(FATAL "Unable to find needed unistd.h!")
   endif()
