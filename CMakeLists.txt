@@ -106,7 +106,7 @@ endif()
 FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/magic.c "${MAGIC_C_CONTENT_NEW}")
 
 FILE(READ ${LIBMAGIC_SOURCE_DIR}/file.h FILE_H_CONTENT)
-if(WIN32)
+if(MSVC)
 STRING(CONCAT FILE_H_CONTENT_NEW "#ifdef WIN32\n#include <unistd.h>\n#include <dirent.h>\n#undef S_IFLNK\n#undef S_IFSOCK\n#endif\n" "${FILE_H_CONTENT}")
 else()
 #set( FILE_H_CONTENT_NEW "${FILE_H_CONTENT}")
