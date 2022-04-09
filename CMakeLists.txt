@@ -116,8 +116,8 @@ STRING(CONCAT FILE_H_CONTENT_NEW "#include <config.h>\n" "${FILE_H_CONTENT}")
 endif()
 FILE(WRITE ${LIBMAGIC_SOURCE_DIR}/file.h "${FILE_H_CONTENT_NEW}")
 
-if (NOT WIN32)
-#if (NOT WIN32 OR MSYS)
+#if (NOT WIN32)
+if (NOT WIN32 OR MSYS)
 # nasty, nasty...
 # so, this windows port has it's own unistd.h for windows...
 # and the path to include is searched -before- system includes...
