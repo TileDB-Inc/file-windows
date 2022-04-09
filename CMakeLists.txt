@@ -90,7 +90,8 @@ FILE(WRITE ${LIBMAGIC_SOURCE_DIR}/magic.h "${MAGIC_H_CONTENT_NEW}")
 
 
 FILE(READ ${LIBMAGIC_SOURCE_DIR}/readelf.c READELF_C_CONTENT)
-if(WIN32)
+#if(WIN32)
+if(MSVC)
 STRING(CONCAT READELF_C_CONTENT_NEW "#include <dirent.h>\n" "${READELF_C_CONTENT}")
 else()
 set( READELF_C_CONTENT_NEW "${READELF_C_CONTENT}")
@@ -98,7 +99,8 @@ endif()
 FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/readelf.c "${READELF_C_CONTENT_NEW}")
 
 FILE(READ ${LIBMAGIC_SOURCE_DIR}/magic.c MAGIC_C_CONTENT)
-if(WIN32)
+#if(WIN32)
+if(MSVC)
 STRING(CONCAT MAGIC_C_CONTENT_NEW "#include <dirent.h>\n" "${MAGIC_C_CONTENT}")
 else()
 set( MAGIC_C_CONTENT_NEW "${MAGIC_C_CONTENT}")
@@ -127,7 +129,7 @@ if (NOT WIN32)
 # or fail if not found.
   find_path(unistd_INCLUDE_DIR
     NAMES unistd.h
-    PATH_SUFFIXES include
+#    PATH_SUFFIXES include
 #    /usr
   )
   if (NOT unistd_INCLUDE_DIR)
