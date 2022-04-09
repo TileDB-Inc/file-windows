@@ -39,8 +39,8 @@ set(WIN_COMPAT_SOURCES
   ${LIBMAGIC_SOURCE_DIR}/localtime_r.c
   ${LIBMAGIC_SOURCE_DIR}/pread.c
   ${LIBMAGIC_SOURCE_DIR}/strcasestr.c
-  ${LIBMAGIC_SOURCE_DIR}/strlcat.c
-  ${LIBMAGIC_SOURCE_DIR}/strlcpy.c
+#  ${LIBMAGIC_SOURCE_DIR}/strlcat.c
+#  ${LIBMAGIC_SOURCE_DIR}/strlcpy.c
   ${LIBMAGIC_SOURCE_DIR}/vasprintf.c
 #  ${LIBMAGIC_SOURCE_DIR}/fmtcheck.c
   ${WIN_HEADERS_DIR}/magic.def
@@ -77,8 +77,8 @@ list(APPEND LIBMAGIC_SOURCE_FILES
   ${LIBMAGIC_SOURCE_DIR}/readcdf.c
   ${CMAKE_CURRENT_BINARY_DIR}/readelf.c
   ${LIBMAGIC_SOURCE_DIR}/softmagic.c
-#  ${LIBMAGIC_SOURCE_DIR}/strlcat.c
-#  ${LIBMAGIC_SOURCE_DIR}/strlcpy.c
+  ${LIBMAGIC_SOURCE_DIR}/strlcat.c
+  ${LIBMAGIC_SOURCE_DIR}/strlcpy.c
   ${LIBMAGIC_SOURCE_DIR}/is_csv.c
 )
 
@@ -185,7 +185,8 @@ if(WIN32)
   target_link_libraries(libmagic pcre2-posix pcre2-8 shlwapi)
 else()
   if(NOT APPLE)
-    target_link_libraries(libmagic pcre2-posix pcre2-8 bsd)
+#    target_link_libraries(libmagic pcre2-posix pcre2-8 bsd)
+    target_link_libraries(libmagic pcre2-posix pcre2-8)
   else()
     # strlcat,strlcpy seem to be in headers (intrinsic) somewhere already
     # and apple complains about 'bsd' lib not found

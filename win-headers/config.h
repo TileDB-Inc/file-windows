@@ -385,7 +385,8 @@ typedef long int64_t;
 //#endif
 #ifdef _WIN32
 #include <stdint.h>
-typedef uint64_t ssize_t;
+// mingw crtdefs defienes as __int64, gcc doesn't like vs uint64_t
+typedef int64_t ssize_t;
 #endif
 #define _SSIZE_T_DEFINED
 #endif
