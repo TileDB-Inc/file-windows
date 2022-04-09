@@ -148,7 +148,7 @@ if (NOT WIN32 OR MSYS)
     PATH_SUFFIXES include
     /usr
   )
-  endif
+  endif()
   if (NOT unistd_INCLUDE_DIR)
     message(FATAL "Unable to find needed unistd.h!")
   endif()
