@@ -88,6 +88,15 @@ STRING(REPLACE "." "" FILE_VERSION_WITHOUT_DOT "${FILE_VERSION}")
 STRING(REPLACE "X.YY" ${FILE_VERSION_WITHOUT_DOT} MAGIC_H_CONTENT_NEW "${MAGIC_H_CONTENT}")
 FILE(WRITE ${LIBMAGIC_SOURCE_DIR}/magic.h "${MAGIC_H_CONTENT_NEW}")
 
+if(0)
+# TBD: Is the following really a problem for us?
+# rtools40/msys2 cdf_ctime from file/src/cdf.c may yield bogus output as input size is not correct
+if(MSYS)
+FILE(READ ${LIBMAGIC_SOURCE_DIR}/cdf.h CDF_H_CONTENT)
+STRING(REPLACE "#ifdef WIN32" "#if defined(WIN32) && !defined(__MINGW32__)" CDF_H_CONTENT_NEW ${CDF_H_CONTENT})
+FILE(WRITE ${LIBMAGIC_SOURCE_DIR}/cdf.h "${CDF_H_CONTENT_NEW}")
+endif()
+endif()
 
 FILE(READ ${LIBMAGIC_SOURCE_DIR}/readelf.c READELF_C_CONTENT)
 #if(WIN32)
