@@ -120,7 +120,7 @@
 #define HAVE_STDLIB_H 1
 
 /* Define to 1 if you have the `strcasestr' function. */
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__MINGW32__)
 #define HAVE_STRCASESTR 1
 #else
 #undef HAVE_STRCASESTR
