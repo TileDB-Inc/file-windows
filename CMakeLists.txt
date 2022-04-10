@@ -77,10 +77,16 @@ list(APPEND LIBMAGIC_SOURCE_FILES
   ${LIBMAGIC_SOURCE_DIR}/readcdf.c
   ${CMAKE_CURRENT_BINARY_DIR}/readelf.c
   ${LIBMAGIC_SOURCE_DIR}/softmagic.c
-  ${LIBMAGIC_SOURCE_DIR}/strlcat.c
-  ${LIBMAGIC_SOURCE_DIR}/strlcpy.c
+#  ${LIBMAGIC_SOURCE_DIR}/strlcat.c
+#  ${LIBMAGIC_SOURCE_DIR}/strlcpy.c
   ${LIBMAGIC_SOURCE_DIR}/is_csv.c
 )
+if(NOT MAC)
+list(APPEND LIBMAGIC_SOURCE_FILES
+  ${LIBMAGIC_SOURCE_DIR}/strlcat.c
+  ${LIBMAGIC_SOURCE_DIR}/strlcpy.c
+)
+endif()
 
 # replace the version in the magic.h.in and write it to magic.h
 FILE(READ ${LIBMAGIC_SOURCE_DIR}/magic.h.in MAGIC_H_CONTENT)
