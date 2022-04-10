@@ -19,6 +19,7 @@
 #define srandom srand
 #define random rand
 
+#ifndef __MINGW32__
 /* Values for the second argument to access.
    These may be OR'd together.  */
 #define R_OK    4       /* Test for read permission.  */
@@ -26,6 +27,7 @@
 #define X_OK    R_OK    /* execute permission - unsupported in Windows,
                            use R_OK instead. */
 #define F_OK    0       /* Test for existence.  */
+#endif
 
 #define access _access
 #define dup2 _dup2
@@ -69,7 +71,9 @@
 #   define S_IFIFO _S_IFIFO
 #endif
 
+#ifndef __MINGW32__
 typedef unsigned int mode_t;
+#endif
 
 #endif /* unistd.h  */
 #endif
