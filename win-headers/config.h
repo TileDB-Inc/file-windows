@@ -379,8 +379,8 @@ typedef long int64_t;
 
 #ifndef _SSIZE_T_DEFINED
 #ifdef _WIN32
-#if defined(__MINGW32_) && !defined(__MINGW64__)
-typedfe int ssize_t;
+#if defined(__MINGW32__) && !defined(__MINGW64__)
+typedef int ssize_t;
 #else
 #include <stdint.h>
 typedef int64_t ssize_t;
