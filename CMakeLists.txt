@@ -149,7 +149,7 @@ if (NOT WIN32)
     /usr
   )
   endif()
-  if (NOT unistd_INCLUDE_DIR_FOUND)
+  if (unistd_INCLUDE_DIR-NOTFOUND)
     message(FATAL_ERROR "Unable to find needed unistd.h!")
   endif()
   FILE(READ ${unistd_INCLUDE_DIR}/unistd.h UNISTD_H_CONTENT)
