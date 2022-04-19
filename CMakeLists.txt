@@ -205,7 +205,7 @@ else()
 endif()
 
 #include_directories (pcre2/src file/src getopt)
-include_directories (pcre2/src)
+include_directories (pcre2/src file/src)
 
 #target_link_libraries(libmagic PRIVATE ${PCRE2_LIBRARIES} ${PCRE2_POSIX_LIBRARIES} shlwapi)
 #target_link_libraries(libmagic PRIVATE pcre2-posix pcre2-8 shlwapi)
@@ -292,6 +292,7 @@ file(WRITE magic.in "")
 
 # Call the "cat" function for each input file
 foreach(MAGIC_FRAGMENT ${MAGIC_FRAGMENTS})
+  message(STATUS "magic frag - ${MAGIC_FRAGMENT}")
   cat(${MAGIC_FRAGMENT} magic.in)
 endforeach()
 
@@ -300,6 +301,7 @@ configure_file(magic.in magic COPYONLY)
 
 add_custom_command(OUTPUT magic.mgc
   COMMAND file -C -m magic
+  COMMAND file -l -m magic
   DEPENDS file
   COMMENT "Compiling magic file"
 )
