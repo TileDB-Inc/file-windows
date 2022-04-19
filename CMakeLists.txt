@@ -205,6 +205,7 @@ else()
 endif()
 
 #include_directories (pcre2/src file/src getopt)
+include_directories (pcre2/src)
 
 #target_link_libraries(libmagic PRIVATE ${PCRE2_LIBRARIES} ${PCRE2_POSIX_LIBRARIES} shlwapi)
 #target_link_libraries(libmagic PRIVATE pcre2-posix pcre2-8 shlwapi)
