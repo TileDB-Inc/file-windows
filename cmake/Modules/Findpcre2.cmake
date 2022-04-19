@@ -3,6 +3,15 @@ if(1)
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/pcre2)
   list(APPEND targets pcre2-8 pcre2-posix)
   set(PCRE2_FOUND TRUE CACHE BOOL "Found PCRE2 libraries" FORCE)
+  find_path(PCRE2_INCLUDE_DIRS pcre2.h PATHS "$ENV{PCRE2_INSTALL_DIR}/include")
+  set_target_properties(pcre2-8 PROPERTIES
+          #IMPORTED_LOCATION "${PCRE2_LIBRARIES}"
+          INTERFACE_INCLUDE_DIRECTORIES "${PCRE2_INCLUDE_DIRS}"
+  )
+  set_target_properties(pcre2-posix PROPERTIES
+          #IMPORTED_LOCATION "${PCRE2_POSIX_LIBRARIES}"
+          INTERFACE_INCLUDE_DIRECTORIES "${PCRE2_INCLUDE_DIRS}"
+  )
 else()
 MESSAGE("PCRE2_INSTALL_DIR: " $ENV{PCRE2_INSTALL_DIR})
 find_library(PCRE2_LIBRARIES NAMES pcre2 pcre2-8 pcre2d pcre2-8d PATHS "$ENV{PCRE2_INSTALL_DIR}/lib")
