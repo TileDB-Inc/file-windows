@@ -200,11 +200,15 @@ else()
   # anything else found/needed then we're prob. still not correct xplat...
 # this 'standard' directory location seems to be ignored, not added directly by cmake?
 # maybe gcc (clang?) sposed to search by default?
-  include_directories (BEFORE SYSTEM /usr/include ) # local unistd.h hopefully found here
+  # note: presence of /usr/include can lead to inclusion of system pcre2*.h headers
+  # rather than the local ones we want found.  This is compensated for below by adding
+  # the local directories -before- everything else.
+#  include_directories (BEFORE SYSTEM /usr/include ) # local unistd.h hopefully found here
   include_directories (AFTER ${WIN_HEADERS_DIR})
 endif()
 
 #include_directories (pcre2/src file/src getopt)
+#include_directories (BEFORE pcre2/src file/src)
 include_directories (pcre2/src file/src)
 
 #target_link_libraries(libmagic PRIVATE ${PCRE2_LIBRARIES} ${PCRE2_POSIX_LIBRARIES} shlwapi)
@@ -229,21 +233,27 @@ target_include_directories(libmagic
 )
 
 # copy /pcre2posix.h to regex.h so it can be used as posix regex libary if regex.h does not exist
-if (NOT PCRE2_INCLUDE_DIRS)
-  GET_TARGET_PROPERTY(PCRE2_INCLUDE_DIRS pcre2-posix INCLUDE_DIRECTORIES)
-endif()
-CHECK_INCLUDE_FILE("regex.h" REGEX_HEADER_FOUND)
-if(NOT REGEX_HEADER_FOUND)
-  foreach(DIR ${PCRE2_INCLUDE_DIRS})
-    if(EXISTS ${DIR}/pcre2posix.h)
-      configure_file(${DIR}/pcre2posix.h ${DIR}/regex.h COPYONLY)
-      set(REGEX_HEADER_FOUND TRUE)
-      break()
-    endif()
-  endforeach()
+if(1)
+  # tiledb always building local pcre, so always perform this copy.
+  message("copying ${CMAKE_CURRENT_SOURCE_DIR}/pcre2/src/pcre2posix.h to ${CMAKE_CURRENT_SOURCE_DIR}/file/src/regex.h")
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/pcre2/src/pcre2posix.h ${CMAKE_CURRENT_SOURCE_DIR}/file/src/regex.h COPYONLY)
+else()
+  if (NOT PCRE2_INCLUDE_DIRS)
+    GET_TARGET_PROPERTY(PCRE2_INCLUDE_DIRS pcre2-posix INCLUDE_DIRECTORIES)
+  endif()
+  CHECK_INCLUDE_FILE("regex.h" REGEX_HEADER_FOUND)
   if(NOT REGEX_HEADER_FOUND)
-    message("copying ${CMAKE_CURRENT_SOURCE_DIR}/pcre2/src/pcre2posix.h to ${CMAKE_CURRENT_SOURCE_DIR}/file/src/regex.h")
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/pcre2/src/pcre2posix.h ${CMAKE_CURRENT_SOURCE_DIR}/file/src/regex.h COPYONLY)
+    foreach(DIR ${PCRE2_INCLUDE_DIRS})
+      if(EXISTS ${DIR}/pcre2posix.h)
+        configure_file(${DIR}/pcre2posix.h ${DIR}/regex.h COPYONLY)
+        set(REGEX_HEADER_FOUND TRUE)
+        break()
+      endif()
+    endforeach()
+    if(NOT REGEX_HEADER_FOUND)
+      message("copying ${CMAKE_CURRENT_SOURCE_DIR}/pcre2/src/pcre2posix.h to ${CMAKE_CURRENT_SOURCE_DIR}/file/src/regex.h")
+      configure_file(${CMAKE_CURRENT_SOURCE_DIR}/pcre2/src/pcre2posix.h ${CMAKE_CURRENT_SOURCE_DIR}/file/src/regex.h COPYONLY)
+    endif()
   endif()
 endif()
 
@@ -292,7 +302,7 @@ file(WRITE magic.in "")
 
 # Call the "cat" function for each input file
 foreach(MAGIC_FRAGMENT ${MAGIC_FRAGMENTS})
-  message(STATUS "magic frag - ${MAGIC_FRAGMENT}")
+#  message(STATUS "magic frag - ${MAGIC_FRAGMENT}")
   cat(${MAGIC_FRAGMENT} magic.in)
 endforeach()
 
