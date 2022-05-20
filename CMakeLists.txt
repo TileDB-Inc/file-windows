@@ -8,10 +8,6 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-if (APPLE)
-  set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
-endif()
-
 # Get library directory for multiarch linux distros
 include(GNUInstallDirs)
 
