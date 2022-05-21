@@ -4,6 +4,8 @@ INCLUDE(CheckIncludeFile)
 
 project(file)
 
+option(FILE_TESTS "Enable file tests" OFF)
+
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -257,21 +259,23 @@ else()
   endif()
 endif()
 
-add_executable(file ${LIBMAGIC_SOURCE_DIR}/file.c)
-set(targets ${targets} file)
-add_executable(file_test ${LIBMAGIC_TEST_DIR}/test.c)
-set(targets ${targets} file_test)
-if(WIN32)
-target_link_libraries(file_test libmagic pcre2-posix shlwapi)
-else()
-target_link_libraries(file_test libmagic pcre2-posix )
+if (FILE_TESTS)
+  add_executable(file ${LIBMAGIC_SOURCE_DIR}/file.c)
+  set(targets ${targets} file)
+  add_executable(file_test ${LIBMAGIC_TEST_DIR}/test.c)
+  set(targets ${targets} file_test)
+  if(WIN32)
+  target_link_libraries(file_test libmagic pcre2-posix shlwapi)
+  else()
+  target_link_libraries(file_test libmagic pcre2-posix )
+  endif()
+
+  target_link_libraries(file libmagic pcre2-posix)
+  if (WIN32)
+    target_link_libraries(file shlwapi)
+  endif()
 endif()
 #target_link_libraries(file libmagic pcre2-posix shlwapi)
-
-target_link_libraries(file libmagic pcre2-posix)
-if (WIN32)
-  target_link_libraries(file shlwapi)
-endif()
 
 # this tests all because of time-zone or crlf errors
 set(DISABLED_TESTS 
@@ -280,18 +284,21 @@ set(DISABLED_TESTS
   regex-eol
   )
 
-enable_testing()
-file(GLOB TESTFILES "${LIBMAGIC_TEST_DIR}/*.testfile")
-foreach(TEST_FILE ${TESTFILES})
-  # extract testname from path and generate command
-  string(REGEX MATCH  "(.*)\.testfile" TESTPATH ${TEST_FILE})
-  set(TESTPATH ${CMAKE_MATCH_1})
-  string(REGEX MATCH  "([a-zA-Z0-9_]|-|\\.)+$" TESTNAME ${TESTPATH})
-  if(NOT ${TESTNAME} IN_LIST DISABLED_TESTS)
-      add_test(NAME ${TESTNAME} COMMAND ${CMAKE_CURRENT_BINARY_DIR}/file_test ${TEST_FILE} ${TESTPATH}.result)
-  endif()
-endforeach()
+if (FILE_TESTS)
+  enable_testing()
 
+  file(GLOB TESTFILES "${LIBMAGIC_TEST_DIR}/*.testfile")
+  foreach(TEST_FILE ${TESTFILES})
+    # extract testname from path and generate command
+    string(REGEX MATCH  "(.*)\.testfile" TESTPATH ${TEST_FILE})
+    set(TESTPATH ${CMAKE_MATCH_1})
+    string(REGEX MATCH  "([a-zA-Z0-9_]|-|\\.)+$" TESTNAME ${TESTPATH})
+    if(NOT ${TESTNAME} IN_LIST DISABLED_TESTS)
+        add_test(NAME ${TESTNAME} COMMAND ${CMAKE_CURRENT_BINARY_DIR}/file_test ${TEST_FILE} ${TESTPATH}.result)
+    endif()
+  endforeach()
+
+endif()
 
 # Following is the compilation of the magic file
 set(MAGIC_FRAGMENT_DIR file/magic/Magdir)
@@ -306,24 +313,28 @@ foreach(MAGIC_FRAGMENT ${MAGIC_FRAGMENTS})
   cat(${MAGIC_FRAGMENT} magic.in)
 endforeach()
 
-# Copy the temporary file to the final location
-configure_file(magic.in magic COPYONLY)
-
-add_custom_command(OUTPUT magic.mgc
-  COMMAND file -C -m magic
-  COMMAND file -l -m magic
-  DEPENDS file
-  COMMENT "Compiling magic file"
-)
-
-add_custom_target(magic_mgc ALL DEPENDS magic.mgc)
-
 # Include module with function 'configure_package_config_file'
 include(CMakePackageConfigHelpers)
 
-#install(TARGETS file file_test DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/magic.mgc DESTINATION ${CMAKE_INSTALL_BINDIR})
+if (NOT DISABLE_MGC_CREATE)
+  # Copy the temporary file to the final location
+  configure_file(magic.in magic COPYONLY)
+
+  add_custom_command(OUTPUT magic.mgc
+    COMMAND file -C -m magic
+    COMMAND file -l -m magic
+    DEPENDS file
+    COMMENT "Compiling magic file"
+  )
+
+  add_custom_target(magic_mgc ALL DEPENDS magic.mgc)
+
+  #install(TARGETS file file_test DESTINATION ${CMAKE_INSTALL_BINDIR})
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/magic.mgc DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
+
 install(FILES ${LIBMAGIC_SOURCE_DIR}/magic.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
 install(TARGETS ${targets}
         EXPORT libmagic-target
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
