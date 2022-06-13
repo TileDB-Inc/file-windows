@@ -186,12 +186,12 @@ endif()
 
 if(BUILD_SHARED_LIBS AND NOT libmagic_STATIC_LIB)
 message(STATUS "Building libmagic SHARED")
-  add_library(libmagic SHARED ${LIBMAGIC_SOURCE_FILES})
+  add_library(magic SHARED ${LIBMAGIC_SOURCE_FILES})
 else()
 message(STATUS "Building libmagic STATIC")
-  add_library(libmagic STATIC ${LIBMAGIC_SOURCE_FILES})
+  add_library(magic STATIC ${LIBMAGIC_SOURCE_FILES})
 endif()
-set(targets ${targets} libmagic)
+set(targets ${targets} magic)
 
 #include_directories (${WIN_HEADERS_DIR} ${PCRE2_INCLUDE_DIRS} ${LIBMAGIC_SOURCE_DIR} dirent/include getopt)
 if(WIN32)
@@ -220,19 +220,19 @@ include_directories (pcre2/src file/src)
 #target_link_libraries(libmagic PRIVATE ${PCRE2_LIBRARIES} ${PCRE2_POSIX_LIBRARIES} shlwapi)
 #target_link_libraries(libmagic PRIVATE pcre2-posix pcre2-8 shlwapi)
 if(WIN32)
-  target_link_libraries(libmagic pcre2-posix pcre2-8 shlwapi)
+  target_link_libraries(magic pcre2-posix pcre2-8 shlwapi)
 else()
   if(NOT APPLE)
 #    target_link_libraries(libmagic pcre2-posix pcre2-8 bsd)
-    target_link_libraries(libmagic pcre2-posix pcre2-8)
+    target_link_libraries(magic pcre2-posix pcre2-8)
   else()
     # strlcat,strlcpy seem to be in headers (intrinsic) somewhere already
     # and apple complains about 'bsd' lib not found
-    target_link_libraries(libmagic pcre2-posix pcre2-8)
+    target_link_libraries(magic pcre2-posix pcre2-8)
   endif()
 endif()
 
-target_include_directories(libmagic
+target_include_directories(magic
         PUBLIC
         "$<BUILD_INTERFACE:${LIBMAGIC_SOURCE_DIR}>"
         "$<INSTALL_INTERFACE:include>"
@@ -276,12 +276,11 @@ if (FILE_TESTS)
   add_executable(file_test ${LIBMAGIC_TEST_DIR}/test.c)
   set(targets ${targets} file_test)
   if(WIN32)
-  target_link_libraries(file_test libmagic pcre2-posix shlwapi)
+  target_link_libraries(file_test magic pcre2-posix shlwapi)
   else()
-  target_link_libraries(file_test libmagic pcre2-posix )
+  target_link_libraries(file_test magic pcre2-posix )
   endif()
 
-endif()
 #target_link_libraries(file libmagic pcre2-posix shlwapi)
 
 # this tests all because of time-zone or crlf errors
@@ -340,19 +339,19 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/magic.mgc DESTINATION ${CMAKE_INSTALL_
 install(FILES ${LIBMAGIC_SOURCE_DIR}/magic.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install(TARGETS ${targets}
-        EXPORT libmagic-target
+        EXPORT magic-target
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
-install(EXPORT libmagic-target
-        FILE libmagic-targets.cmake
-        DESTINATION lib/cmake/libmagic
+install(EXPORT magic-target
+        FILE magic-targets.cmake
+        DESTINATION lib/cmake/magic
         )
 file(WRITE
-        ${CMAKE_BINARY_DIR}/libmagic-config.cmake
-        "include(\${CMAKE_CURRENT_LIST_DIR}/libmagic-targets.cmake)\n")
+        ${CMAKE_BINARY_DIR}/magic-config.cmake
+        "include(\${CMAKE_CURRENT_LIST_DIR}/magic-targets.cmake)\n")
 install(FILES
-        ${CMAKE_BINARY_DIR}/libmagic-config.cmake
-        DESTINATION lib/cmake/libmagic)
+        ${CMAKE_BINARY_DIR}/magic-config.cmake
+        DESTINATION lib/cmake/magic)
