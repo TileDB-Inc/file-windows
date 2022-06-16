@@ -259,9 +259,21 @@ else()
   endif()
 endif()
 
+# 'file' CLI
+add_executable(file ${LIBMAGIC_SOURCE_DIR}/file.c)
+set(targets ${targets} file)
+target_link_libraries(file libmagic pcre2-posix)
+if (WIN32)
+  target_link_libraries(file shlwapi)
+endif()
+
+if (BUILD_HOST_TOOLS_MACOS_UNIVERSAL)
+  set_target_properties(file
+                        PROPERTIES OSX_ARCHITECTURE "arm64;x86_64")
+endif()
+
+# Tests
 if (FILE_TESTS)
-  add_executable(file ${LIBMAGIC_SOURCE_DIR}/file.c)
-  set(targets ${targets} file)
   add_executable(file_test ${LIBMAGIC_TEST_DIR}/test.c)
   set(targets ${targets} file_test)
   if(WIN32)
@@ -270,10 +282,6 @@ if (FILE_TESTS)
   target_link_libraries(file_test libmagic pcre2-posix )
   endif()
 
-  target_link_libraries(file libmagic pcre2-posix)
-  if (WIN32)
-    target_link_libraries(file shlwapi)
-  endif()
 endif()
 #target_link_libraries(file libmagic pcre2-posix shlwapi)
 
@@ -316,21 +324,19 @@ endforeach()
 # Include module with function 'configure_package_config_file'
 include(CMakePackageConfigHelpers)
 
-if (NOT DISABLE_MGC_CREATE)
-  # Copy the temporary file to the final location
-  configure_file(magic.in magic COPYONLY)
+# Copy the temporary file to the final location
+configure_file(magic.in magic COPYONLY)
 
-  add_custom_command(OUTPUT magic.mgc
-    COMMAND file -C -m magic
-    DEPENDS file
-    COMMENT "Compiling magic file"
-  )
+add_custom_command(OUTPUT magic.mgc
+  COMMAND file -C -m magic
+  DEPENDS file
+  COMMENT "Compiling magic file"
+)
 
-  add_custom_target(magic_mgc ALL DEPENDS magic.mgc)
+add_custom_target(magic_mgc ALL DEPENDS magic.mgc)
 
-  #install(TARGETS file file_test DESTINATION ${CMAKE_INSTALL_BINDIR})
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/magic.mgc DESTINATION ${CMAKE_INSTALL_BINDIR})
-endif()
+#install(TARGETS file file_test DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/magic.mgc DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install(FILES ${LIBMAGIC_SOURCE_DIR}/magic.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
