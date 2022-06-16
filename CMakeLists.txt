@@ -10,6 +10,10 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
+if (BUILD_MAGIC_MACOS_UNIVERSAL)
+  set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
+endif()
+
 # Get library directory for multiarch linux distros
 include(GNUInstallDirs)
 
@@ -265,11 +269,6 @@ set(targets ${targets} file)
 target_link_libraries(file libmagic pcre2-posix)
 if (WIN32)
   target_link_libraries(file shlwapi)
-endif()
-
-if (BUILD_HOST_TOOLS_MACOS_UNIVERSAL)
-  set_target_properties(file
-                        PROPERTIES OSX_ARCHITECTURE "arm64;x86_64")
 endif()
 
 # Tests
