@@ -31,7 +31,7 @@ set(PCRE2_LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/pcre2/install_dir/lib")
 
 set(FILE_VERSION 5.39)
 
-set(WIN_COMPAT_SOURCES 
+set(WIN_COMPAT_SOURCES
   ${LIBMAGIC_SOURCE_DIR}/asctime_r.c
   ${LIBMAGIC_SOURCE_DIR}/asprintf.c
   ${LIBMAGIC_SOURCE_DIR}/ctime_r.c
@@ -278,7 +278,7 @@ endif()
 #target_link_libraries(file libmagic pcre2-posix shlwapi)
 
 # this tests all because of time-zone or crlf errors
-set(DISABLED_TESTS 
+set(DISABLED_TESTS
   gedcom
   fit-map-data
   regex-eol
@@ -322,7 +322,6 @@ if (NOT DISABLE_MGC_CREATE)
 
   add_custom_command(OUTPUT magic.mgc
     COMMAND file -C -m magic
-    COMMAND file -l -m magic
     DEPENDS file
     COMMENT "Compiling magic file"
   )
