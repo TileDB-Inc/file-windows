@@ -271,6 +271,8 @@ if (WIN32)
   target_link_libraries(file shlwapi)
 endif()
 
+message(STATUS "Inside libmagic build: ${BUILD_HOST_TOOLS_MACOS_UNIVERSAL}")
+
 if (BUILD_HOST_TOOLS_MACOS_UNIVERSAL)
   set_target_properties(file
                         PROPERTIES OSX_ARCHITECTURE "arm64;x86_64")
