@@ -326,8 +326,14 @@ include(CMakePackageConfigHelpers)
 # Copy the temporary file to the final location
 configure_file(magic.in magic COPYONLY)
 
+
+set(FILE_COMMAND "file")
+if (DEFINED ENV{FILE_COMMAND_OVERRIDE})
+  set(FILE_COMMAND "$ENV{FILE_COMMAND_OVERRIDE}")
+endif()
+
 add_custom_command(OUTPUT magic.mgc
-  COMMAND file -C -m magic
+  COMMAND ${FILE_COMMAND} -C -m magic
   DEPENDS file
   COMMENT "Compiling magic file"
 )
