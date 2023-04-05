@@ -186,12 +186,12 @@ endif()
 
 if(BUILD_SHARED_LIBS AND NOT libmagic_STATIC_LIB)
 message(STATUS "Building libmagic SHARED")
-  add_library(libmagic SHARED ${LIBMAGIC_SOURCE_FILES})
+  add_library(magic SHARED ${LIBMAGIC_SOURCE_FILES})
 else()
 message(STATUS "Building libmagic STATIC")
-  add_library(libmagic STATIC ${LIBMAGIC_SOURCE_FILES})
+  add_library(magic STATIC ${LIBMAGIC_SOURCE_FILES})
 endif()
-set(targets ${targets} libmagic)
+set(targets ${targets} magic)
 
 #include_directories (${WIN_HEADERS_DIR} ${PCRE2_INCLUDE_DIRS} ${LIBMAGIC_SOURCE_DIR} dirent/include getopt)
 if(WIN32)
@@ -220,19 +220,19 @@ include_directories (pcre2/src file/src)
 #target_link_libraries(libmagic PRIVATE ${PCRE2_LIBRARIES} ${PCRE2_POSIX_LIBRARIES} shlwapi)
 #target_link_libraries(libmagic PRIVATE pcre2-posix pcre2-8 shlwapi)
 if(WIN32)
-  target_link_libraries(libmagic pcre2-posix pcre2-8 shlwapi)
+  target_link_libraries(magic pcre2-posix pcre2-8 shlwapi)
 else()
   if(NOT APPLE)
 #    target_link_libraries(libmagic pcre2-posix pcre2-8 bsd)
-    target_link_libraries(libmagic pcre2-posix pcre2-8)
+    target_link_libraries(magic pcre2-posix pcre2-8)
   else()
     # strlcat,strlcpy seem to be in headers (intrinsic) somewhere already
     # and apple complains about 'bsd' lib not found
-    target_link_libraries(libmagic pcre2-posix pcre2-8)
+    target_link_libraries(magic pcre2-posix pcre2-8)
   endif()
 endif()
 
-target_include_directories(libmagic
+target_include_directories(magic
         PUBLIC
         "$<BUILD_INTERFACE:${LIBMAGIC_SOURCE_DIR}>"
         "$<INSTALL_INTERFACE:include>"
@@ -265,10 +265,16 @@ endif()
 
 # 'file' CLI
 add_executable(file ${LIBMAGIC_SOURCE_DIR}/file.c)
-set(targets ${targets} file)
-target_link_libraries(file libmagic pcre2-posix)
+target_link_libraries(file magic pcre2-posix)
 if (WIN32)
   target_link_libraries(file shlwapi)
+endif()
+
+if (WIN32)
+  add_custom_command(TARGET file POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:file> $<TARGET_FILE_DIR:file>
+    COMMAND_EXPAND_LISTS
+  )
 endif()
 
 # Tests
@@ -276,9 +282,9 @@ if (FILE_TESTS)
   add_executable(file_test ${LIBMAGIC_TEST_DIR}/test.c)
   set(targets ${targets} file_test)
   if(WIN32)
-  target_link_libraries(file_test libmagic pcre2-posix shlwapi)
+  target_link_libraries(file_test magic pcre2-posix shlwapi)
   else()
-  target_link_libraries(file_test libmagic pcre2-posix )
+  target_link_libraries(file_test magic pcre2-posix )
   endif()
 
 endif()
@@ -326,14 +332,8 @@ include(CMakePackageConfigHelpers)
 # Copy the temporary file to the final location
 configure_file(magic.in magic COPYONLY)
 
-
-set(FILE_COMMAND "file")
-if (DEFINED ENV{FILE_COMMAND_OVERRIDE})
-  set(FILE_COMMAND "$ENV{FILE_COMMAND_OVERRIDE}")
-endif()
-
 add_custom_command(OUTPUT magic.mgc
-  COMMAND ${FILE_COMMAND} -C -m magic
+  COMMAND file -C -m magic
   DEPENDS file
   COMMENT "Compiling magic file"
 )
@@ -345,7 +345,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/magic.mgc DESTINATION ${CMAKE_INSTALL_
 
 install(FILES ${LIBMAGIC_SOURCE_DIR}/magic.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-install(TARGETS ${targets}
+install(TARGETS magic pcre2-8 pcre2-posix
         EXPORT libmagic-target
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
