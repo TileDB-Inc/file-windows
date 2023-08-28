@@ -89,9 +89,7 @@ CMakeFiles/
 *.user
 *.suo
 CMakeCache.txt
-magic
 magic.c
-magic.in
 magic.mgc
 readelf.c
 libmagic.dir/

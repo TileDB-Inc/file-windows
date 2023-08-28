@@ -309,23 +309,20 @@ endif()
 
 # Following is the compilation of the magic file
 set(MAGIC_FRAGMENT_DIR file/magic/Magdir)
+set(MAGIC_FILE ${CMAKE_CURRENT_BINARY_DIR}/magic)
 file(GLOB MAGIC_FRAGMENTS ${MAGIC_FRAGMENT_DIR}/*)
 
 # Prepare a temporary file to "cat" to:
-file(WRITE magic.in "")
+file(WRITE ${MAGIC_FILE} "")
 
 # Call the "cat" function for each input file
 foreach(MAGIC_FRAGMENT ${MAGIC_FRAGMENTS})
 #  message(STATUS "magic frag - ${MAGIC_FRAGMENT}")
-  cat(${MAGIC_FRAGMENT} magic.in)
+  cat(${MAGIC_FRAGMENT} ${MAGIC_FILE})
 endforeach()
 
 # Include module with function 'configure_package_config_file'
 include(CMakePackageConfigHelpers)
-
-# Copy the temporary file to the final location
-configure_file(magic.in magic COPYONLY)
-
 
 set(FILE_COMMAND "file")
 if (DEFINED ENV{FILE_COMMAND_OVERRIDE})
@@ -333,7 +330,7 @@ if (DEFINED ENV{FILE_COMMAND_OVERRIDE})
 endif()
 
 add_custom_command(OUTPUT magic.mgc
-  COMMAND ${FILE_COMMAND} -C -m magic
+  COMMAND ${FILE_COMMAND} -C -m ${MAGIC_FILE}
   DEPENDS file
   COMMENT "Compiling magic file"
 )
